@@ -42,7 +42,7 @@ public class DownloaderBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return "Downloader Bot";
+        return "MasterDownloaderBot";
     }
 
     // https://stackoverflow.com/questions/4716503/reading-a-plain-text-file-in-java
@@ -76,6 +76,6 @@ public class DownloaderBot extends TelegramLongPollingBot {
             }
         }
         assert token != null;
-        return token.replaceAll("\n","");
+        return token.replaceAll("\r?\n","");
     }
 }
