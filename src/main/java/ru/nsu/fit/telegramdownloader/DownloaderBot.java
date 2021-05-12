@@ -2,42 +2,49 @@ package ru.nsu.fit.telegramdownloader;
 
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.*;
+import java.net.MalformedURLException;
 
-import org.apache.commons.validator.routines.UrlValidator;
+import ru.nsu.fit.telegramdownloader.implementers.UrlDownloader;
 import ru.nsu.fit.telegramdownloader.utils.UrlHandler;
 
 
 public class DownloaderBot extends TelegramLongPollingBot {
     private final UrlHandler urlHandler;
+    private final AuthorisationUtils authorisationUtils;
 
     public DownloaderBot() {
         urlHandler = new UrlHandler();
+        authorisationUtils = AuthorisationUtils.getInstance();
     }
 
     @Override
     public void onUpdateReceived(Update update) {
-        // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
             try {
-            if (UrlHandler.isUrl(update.getMessage().getText())) {
-                    sendMessage("is url. Start download!", update.getMessage().getChatId().toString());
-                    urlHandler.downloadFile(update.getMessage().getText());
+            if (UrlHandler.isUrl(update.getMessage().getText()) && authorisationUtils.trustedUser(update.getMessage().getFrom().getId())) {
+                    Thread downloadThread = new Thread(new UrlDownloader(update.getMessage().getChatId().toString(), update.getMessage().getText(), this));
+                    downloadThread.start();
+            } else if (!authorisationUtils.trustedUser(update.getMessage().getFrom().getId())) {
+                sendMessage("You are not trusted user", update.getMessage().getChatId().toString());
             } else {
                 sendMessage("is not url", update.getMessage().getChatId().toString());
             }
-            } catch (TelegramApiException | IOException e) {
+            } catch (TelegramApiException | MalformedURLException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public void sendMessage(String text, String chatId) throws TelegramApiException {
+
+
+    public Message sendMessage(String text, String chatId) throws TelegramApiException {
         SendMessage message = new SendMessage(chatId, text);
-        execute(message);
+        return execute(message);
     }
 
     @Override

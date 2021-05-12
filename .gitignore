@@ -3,6 +3,8 @@ build
 .gradle
 gradle
 *token.txt
+*adminlist.txt
+*tokenlist.txt
 # Compiled class file
 *.class
 
