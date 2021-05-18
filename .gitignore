@@ -5,6 +5,8 @@ gradle
 *token.txt
 *adminlist.txt
 *tokenlist.txt
+*stat.txt
+*log.*.txt
 # Compiled class file
 *.class
 

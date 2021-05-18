@@ -1,46 +1,123 @@
 package ru.nsu.fit.telegramdownloader;
 
+import org.apache.commons.io.FilenameUtils;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.*;
 import java.net.MalformedURLException;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
+import ru.nsu.fit.telegramdownloader.implementers.GetStat;
+import ru.nsu.fit.telegramdownloader.implementers.TorrentDownloader;
 import ru.nsu.fit.telegramdownloader.implementers.UrlDownloader;
+import ru.nsu.fit.telegramdownloader.utils.TokenGenerator;
 import ru.nsu.fit.telegramdownloader.utils.UrlHandler;
-
+import org.apache.commons.lang3.StringUtils;
 
 public class DownloaderBot extends TelegramLongPollingBot {
-    private final UrlHandler urlHandler;
+    static Logger LOGGER;
+    static {
+        try(FileInputStream ins = new FileInputStream("log.config")){
+            LogManager.getLogManager().readConfiguration(ins);
+            LOGGER = Logger.getLogger(DownloaderBot.class.getName());
+        }catch (Exception ignore){
+            ignore.printStackTrace();
+        }
+    }
     private final AuthorisationUtils authorisationUtils;
+    private final Statistics stat;
 
     public DownloaderBot() {
-        urlHandler = new UrlHandler();
         authorisationUtils = AuthorisationUtils.getInstance();
+        stat = new Statistics();
+        LOGGER.log(Level.INFO, "Init bot");
     }
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
-            try {
-            if (UrlHandler.isUrl(update.getMessage().getText()) && authorisationUtils.trustedUser(update.getMessage().getFrom().getId())) {
-                    Thread downloadThread = new Thread(new UrlDownloader(update.getMessage().getChatId().toString(), update.getMessage().getText(), this));
-                    downloadThread.start();
-            } else if (!authorisationUtils.trustedUser(update.getMessage().getFrom().getId())) {
-                sendMessage("You are not trusted user", update.getMessage().getChatId().toString());
-            } else {
-                sendMessage("is not url", update.getMessage().getChatId().toString());
+        try {
+            if (update.hasMessage()) {
+                acceptMessage(update.getMessage());
             }
-            } catch (TelegramApiException | MalformedURLException e) {
-                e.printStackTrace();
-            }
+
+        } catch (TelegramApiException | MalformedURLException e) {
+            e.printStackTrace();
         }
     }
 
+    private void acceptMessage(Message message) throws TelegramApiException, MalformedURLException {
+        if (message.hasText()) {
+            acceptTextMessage(message);
+        } else if (message.hasDocument()) {
+            acceptDocumentMessage(message);
+        }
+    }
 
+    private boolean checkAuth(Message message) {
+        return authorisationUtils.trustedUser(message.getFrom().getId());
+    }
+
+    private void acceptDocumentMessage(Message message) throws TelegramApiException {
+        if (!checkAuth(message)) {
+            sendMessage("You are not trusted user", message.getChatId().toString());
+            return;
+        }
+        if (!FilenameUtils.getExtension(message.getDocument().getFileName()).equals("torrent")) {
+            sendMessage("This file is not a torrent-file", message.getChatId().toString());
+            return;
+        }
+        File torrentFile = downloadTorrentFile(message.getDocument());
+        Thread torrentThread = new Thread(new TorrentDownloader(torrentFile, message.getDocument().getFileName(),
+                this, message.getChatId().toString(), stat, message.getFrom().getId()));
+        torrentThread.start();
+    }
+
+    private File downloadTorrentFile(Document torrentDoc) {
+        GetFile getFileMethod = new GetFile();
+        getFileMethod.setFileId(torrentDoc.getFileId());
+        try {
+            org.telegram.telegrambots.meta.api.objects.File file = execute(getFileMethod);
+            return downloadFile(file.getFilePath());
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private void acceptTextMessage(Message message) throws TelegramApiException, MalformedURLException {
+        if (UrlHandler.isUrl(message.getText()) && authorisationUtils.trustedUser(message.getFrom().getId())) {
+            Thread downloadThread = new Thread(new UrlDownloader(message.getChatId().toString(),
+                    message.getText(), this, stat, message.getFrom().getId()));
+            downloadThread.start();
+        } else if (!authorisationUtils.trustedUser(message.getFrom().getId()) &&
+                authorisationUtils.isToken(message.getText())) {
+            authorisationUtils.addToken(message.getText(), message.getFrom().getId());
+            sendMessage("Token accepted", message.getChatId().toString());
+        } else if (!authorisationUtils.trustedUser(message.getFrom().getId())) {
+            sendMessage("You are not trusted user", message.getChatId().toString());
+        } else if ("/stat".equals(message.getText())) {
+            GetStat.sendMyStat(this, stat, message.getFrom().getId(), message.getChatId().toString());
+        } else if (authorisationUtils.isAdmin(message.getFrom().getId()) && "/allstat".equals(message.getText())) {
+            GetStat.sendAllStat(this, stat, message.getFrom().getId(), message.getChatId().toString());
+        } else if (authorisationUtils.isAdmin(message.getFrom().getId()) &&
+                message.getText().split(" ", 2)[0].equals("/generatetoken") &&
+                StringUtils.isNumeric(message.getText().split(" ", 2)[1])) {
+            String token = TokenGenerator.generateToken();
+            sendMessage("Generated token: " + token, message.getChatId().toString());
+            authorisationUtils.addToken(token, Long.parseLong(message.getText().split(" ", 2)[1], 10));
+        } else {
+            sendMessage("is not url", message.getChatId().toString());
+        }
+    }
 
     public Message sendMessage(String text, String chatId) throws TelegramApiException {
         SendMessage message = new SendMessage(chatId, text);
@@ -58,7 +135,7 @@ public class DownloaderBot extends TelegramLongPollingBot {
         String token = null;
         BufferedReader br;
         try {
-            File tokenFile = new File(getClass().getClassLoader().getResource("token.txt").getFile());
+            File tokenFile = new File(Objects.requireNonNull(getClass().getClassLoader().getResource("token.txt")).getFile());
             br = new BufferedReader(new FileReader(tokenFile));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -84,5 +161,19 @@ public class DownloaderBot extends TelegramLongPollingBot {
         }
         assert token != null;
         return token.replaceAll("\n","");
+    }
+
+    public void stop() {
+        try {
+            stat.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onClosing() {
+        super.onClosing();
+        LOGGER.log(Level.INFO, "Stop bot");
     }
 }
