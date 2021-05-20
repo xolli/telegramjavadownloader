@@ -33,27 +33,29 @@ public class DownloaderBot extends TelegramLongPollingBot {
             ignore.printStackTrace();
         }
     }
-    private final AuthorisationUtils authorisationUtils;
-    private final Statistics stat;
+
+    private final Controller controller;
 
     public DownloaderBot() {
-        authorisationUtils = AuthorisationUtils.getInstance();
-        stat = new Statistics();
+
+        controller = new Controller();
+        controller.setBot(this);
         LOGGER.log(Level.INFO, "Init bot");
     }
 
     @Override
     public void onUpdateReceived(Update update) {
-        try {
-            if (update.hasMessage()) {
-                acceptMessage(update.getMessage());
-            }
+        if (update.hasMessage()) {
+            try {
 
-        } catch (TelegramApiException | MalformedURLException e) {
-            e.printStackTrace();
+                controller.recvMess(update);
+            } catch (TelegramApiException | MalformedURLException e) {
+                e.printStackTrace();
+            }
         }
     }
-
+        /*
+    //контроллеру это отправлять
     private void acceptMessage(Message message) throws TelegramApiException, MalformedURLException {
         if (message.hasText()) {
             acceptTextMessage(message);
@@ -61,11 +63,11 @@ public class DownloaderBot extends TelegramLongPollingBot {
             acceptDocumentMessage(message);
         }
     }
-
+    //контроллер
     private boolean checkAuth(Message message) {
         return authorisationUtils.trustedUser(message.getFrom().getId());
     }
-
+    //контроллер
     private void acceptDocumentMessage(Message message) throws TelegramApiException {
         if (!checkAuth(message)) {
             sendMessage("You are not trusted user", message.getChatId().toString());
@@ -81,6 +83,7 @@ public class DownloaderBot extends TelegramLongPollingBot {
         torrentThread.start();
     }
 
+    //перенести в состояние скачивателя
     private File downloadTorrentFile(Document torrentDoc) {
         GetFile getFileMethod = new GetFile();
         getFileMethod.setFileId(torrentDoc.getFileId());
@@ -93,7 +96,10 @@ public class DownloaderBot extends TelegramLongPollingBot {
         return null;
     }
 
+
+    /контроллер
     private void acceptTextMessage(Message message) throws TelegramApiException, MalformedURLException {
+        System.out.println(message.getFrom().getId());
         if (UrlHandler.isUrl(message.getText()) && authorisationUtils.trustedUser(message.getFrom().getId())) {
             Thread downloadThread = new Thread(new UrlDownloader(message.getChatId().toString(),
                     message.getText(), this, stat, message.getFrom().getId()));
@@ -117,12 +123,21 @@ public class DownloaderBot extends TelegramLongPollingBot {
         } else {
             sendMessage("is not url", message.getChatId().toString());
         }
-    }
+    }*/
 
     public Message sendMessage(String text, String chatId) throws TelegramApiException {
         SendMessage message = new SendMessage(chatId, text);
         return execute(message);
     }
+
+
+
+
+
+
+
+
+
 
     @Override
     public String getBotUsername() {
@@ -160,12 +175,12 @@ public class DownloaderBot extends TelegramLongPollingBot {
             }
         }
         assert token != null;
-        return token.replaceAll("\n","");
+        return token.replaceAll("\r?\n","");
     }
 
     public void stop() {
         try {
-            stat.close();
+            controller.closeStat();
         } catch (Exception e) {
             e.printStackTrace();
         }

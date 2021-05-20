@@ -1,8 +1,6 @@
-package ru.nsu.fit.telegramdownloader;
+package ru.nsu.fit.telegramdownloader.utils;
 
-import org.apache.commons.lang3.StringUtils;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
-import ru.nsu.fit.telegramdownloader.utils.FilesUtils;
+//import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
