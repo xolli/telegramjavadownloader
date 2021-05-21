@@ -4,6 +4,8 @@ package ru.nsu.fit.telegramdownloader.implementers;
 import com.turn.ttorrent.client.Client;
 import com.turn.ttorrent.client.SharedTorrent;
 import org.apache.commons.io.FileUtils;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
+import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.zeroturnaround.zip.ZipUtil;
 import ru.nsu.fit.telegramdownloader.DownloaderBot;
@@ -34,10 +36,15 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
     private final Statistics stat;
     private final Long userId;
 
-    public TorrentDownloader(File torrentFile, String inputName, DownloaderBot bot, String chatId,
+    public TorrentDownloader(Document torrentDoc, String inputName, DownloaderBot bot, String chatId,
                              Statistics stat, Long userId) throws TelegramApiException {
         super("Init torrent..", bot, chatId);
+        this.bot = bot;
+        this.inputName = inputName;
+        this.stat = stat;
+        this.userId = userId;
         try {
+            File torrentFile = downloadTorrentFile(torrentDoc);
             LOGGER.info("Start create client");
             FilesUtils.mkDir("downloadTelegramBot/" + getDirName(inputName));
             client = new Client(InetAddress.getLocalHost(),
@@ -48,10 +55,7 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
         } catch (IOException | NoSuchAlgorithmException exception) {
             exception.printStackTrace();
         }
-        this.bot = bot;
-        this.inputName = inputName;
-        this.stat = stat;
-        this.userId = userId;
+
     }
 
     @Override
@@ -92,4 +96,18 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
         }
         return torrentFilename.substring(0, lastPeriodPos);
     }
+
+    private File downloadTorrentFile(Document torrentDoc) {
+        GetFile getFileMethod = new GetFile();
+        getFileMethod.setFileId(torrentDoc.getFileId());
+        try {
+            LOGGER.info("download .torrent file");
+            org.telegram.telegrambots.meta.api.objects.File file = bot.execute(getFileMethod);
+            return bot.downloadFile(file.getFilePath());
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
