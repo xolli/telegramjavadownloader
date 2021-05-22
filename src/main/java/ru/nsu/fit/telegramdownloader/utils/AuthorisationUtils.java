@@ -29,10 +29,18 @@ public class AuthorisationUtils {
         private final static AuthorisationUtils instance = new AuthorisationUtils();
     }
 
-    public void addToken(String token, Long userId) {
+    public void generateToken(String token) {
         synchronized (tokens) {
             tokens.remove(token);
-            tokens.put(token, userId);
+            tokens.put(token, (long) 0);
+            writeTokens();
+        }
+
+    }
+    public void addToken(String token,Long chatID) {
+        synchronized (tokens) {
+            tokens.remove(token);
+            tokens.put(token, chatID);
             writeTokens();
         }
 
@@ -58,5 +66,8 @@ public class AuthorisationUtils {
 
     public boolean isToken(String text) {
         return tokens.containsKey(text);
+    }
+    public boolean unusedToken(String text){
+        return tokens.get(text).equals((long) 0);
     }
 }
