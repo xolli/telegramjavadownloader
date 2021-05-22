@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.zeroturnaround.zip.ZipUtil;
 import ru.nsu.fit.telegramdownloader.DownloaderBot;
 import ru.nsu.fit.telegramdownloader.Statistics;
+import ru.nsu.fit.telegramdownloader.buttons.Keyboard;
 import ru.nsu.fit.telegramdownloader.utils.FilesUtils;
 
 import java.io.*;
@@ -37,8 +38,8 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
     private final Long userId;
 
     public TorrentDownloader(Document torrentDoc, String inputName, DownloaderBot bot, String chatId,
-                             Statistics stat, Long userId) throws TelegramApiException {
-        super("Init torrent..", bot, chatId);
+                             Statistics stat, Long userId, Keyboard keyboard) throws TelegramApiException {
+        super("Init torrent..", bot, chatId,keyboard);
         this.bot = bot;
         this.inputName = inputName;
         this.stat = stat;
@@ -49,6 +50,7 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
             FilesUtils.mkDir("downloadTelegramBot/" + getDirName(inputName));
             client = new Client(InetAddress.getLocalHost(),
                     SharedTorrent.fromFile(torrentFile, new File("downloadTelegramBot/" + getDirName(inputName))));
+
             LOGGER.info("Client created");
             client.setMaxDownloadRate(0.0);
             client.setMaxUploadRate(0.0);
@@ -63,6 +65,14 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
         try {
             updateStatus("Start download torrent");
             client.download();
+            int percentage = 0;
+            while (client.getTorrent().getCompletion()!=100){
+                if(percentage!=(int)client.getTorrent().getCompletion()) {
+                    updateStatus("Downloaded " + (int)client.getTorrent().getCompletion()+"%");
+                }
+                percentage = (int)client.getTorrent().getCompletion();
+                Thread.sleep(100);
+            }
             client.waitForCompletion();
             updateStatus("Start upload file...");
             String zipName = zipDir("downloadTelegramBot/" + getDirName(inputName));
@@ -71,7 +81,7 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
             Files.delete(Paths.get(zipName));
             FileUtils.deleteDirectory(new File("downloadTelegramBot/" + getDirName(inputName)));
             updateStatus("Done!");
-        } catch (TelegramApiException | IOException e) {
+        } catch (TelegramApiException | IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }

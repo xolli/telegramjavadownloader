@@ -31,7 +31,7 @@ public class Authorisation extends Condition {  //вся авторизация 
     }
 
     public void recv(Update update) throws TelegramApiException {
-        if(update.getMessage().hasText() && authorisationUtils.isToken(update.getMessage().getText())){
+        if(update.getMessage().hasText() && authorisationUtils.isToken(update.getMessage().getText()) && authorisationUtils.unusedToken(update.getMessage().getText())){
             authorisationUtils.addToken(update.getMessage().getText(), update.getMessage().getFrom().getId());
             message.setText("Token accepted");
             send();

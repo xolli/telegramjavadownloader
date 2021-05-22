@@ -7,14 +7,16 @@ import ru.nsu.fit.telegramdownloader.buttons.KeyboardAdminMenu;
 import ru.nsu.fit.telegramdownloader.buttons.KeyboardUserMenu;
 import ru.nsu.fit.telegramdownloader.implementers.GetStat;
 import ru.nsu.fit.telegramdownloader.implementers.Helper;
+import ru.nsu.fit.telegramdownloader.utils.AuthorisationUtils;
 import ru.nsu.fit.telegramdownloader.utils.TokenGenerator;
 
 import java.net.MalformedURLException;
 
 public class AdminMenu extends UserMenu {
-    private KeyboardAdminMenu keyboard;
+    private final AuthorisationUtils authorisationUtils;
     public AdminMenu(Long chatID, Controller controller) throws TelegramApiException {
         super(chatID, controller);
+        authorisationUtils = AuthorisationUtils.getInstance();
         keyboard = new KeyboardAdminMenu();
         message.setText("Hi, Admin!");
         message.setReplyMarkup(keyboard.getKeyboard());
@@ -23,7 +25,7 @@ public class AdminMenu extends UserMenu {
 
     public void recv(Update update) throws TelegramApiException, MalformedURLException {
         super.recv(update);
-        message.setReplyMarkup(keyboard.getKeyboard());
+
         checkAdminButtons();
     }
 
@@ -35,7 +37,10 @@ public class AdminMenu extends UserMenu {
                 GetStat.sendAllStat(controller.getBot(),controller.getStat(),chatID,message);
             } else if(pressedButton.equals(KeyboardAdminMenu.GENERATE_TOKEN) || "/generatetoken".equals(pressedButton)){
                 String token = TokenGenerator.generateToken();
-                message.setText("Generated token: " + token);
+                authorisationUtils.generateToken(token);
+                message.setText("Generated token:");
+                send();
+                message.setText(token); // для удобного копирования
                 send();
             }
 

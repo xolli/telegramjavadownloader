@@ -3,6 +3,7 @@ package ru.nsu.fit.telegramdownloader.implementers;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.nsu.fit.telegramdownloader.DownloaderBot;
 import ru.nsu.fit.telegramdownloader.Statistics;
+import ru.nsu.fit.telegramdownloader.buttons.Keyboard;
 import ru.nsu.fit.telegramdownloader.utils.FilesUtils;
 import ru.nsu.fit.telegramdownloader.utils.UrlHandler;
 
@@ -21,8 +22,8 @@ public class UrlDownloader extends StatusUpdater implements Runnable {
     private final Statistics stat;
     private final Long userId;
 
-    public UrlDownloader(String chatId, String url, DownloaderBot bot, Statistics stat, Long userId) throws TelegramApiException, MalformedURLException {
-        super("Wait...", bot, chatId);
+    public UrlDownloader(String chatId, String url, DownloaderBot bot, Statistics stat, Long userId, Keyboard keyboard) throws TelegramApiException, MalformedURLException {
+        super("Wait...", bot, chatId, keyboard);
         this.url = url;
         FilesUtils.mkDir(DOWNLOAD_FOLDER);
         fileSize = getFileSize(new URL(url));
@@ -35,7 +36,9 @@ public class UrlDownloader extends StatusUpdater implements Runnable {
         String filename = null;
         try {
             filename = DownloadFile();
+            updateStatus("Done!");
             uploadFile(filename);
+
             stat.updateUserStat(userId, FilesUtils.getFileSize(filename));
         } catch (IOException e) {
             try {

@@ -54,6 +54,18 @@ public class DownloaderBot extends TelegramLongPollingBot {
             }
         }
     }
+
+    public Message sendMessage(String text, String chatId) throws TelegramApiException {
+        SendMessage message = new SendMessage(chatId, text);
+        return execute(message);
+    }
+    public Message sendMessage(SendMessage message,String text, String chatId) throws TelegramApiException {
+        message.setText(text);
+        message.setChatId(chatId);
+        return execute(message);
+    }
+
+
         /*
     //контроллеру это отправлять
     private void acceptMessage(Message message) throws TelegramApiException, MalformedURLException {
@@ -125,10 +137,6 @@ public class DownloaderBot extends TelegramLongPollingBot {
         }
     }*/
 
-    public Message sendMessage(String text, String chatId) throws TelegramApiException {
-        SendMessage message = new SendMessage(chatId, text);
-        return execute(message);
-    }
 
 
 
