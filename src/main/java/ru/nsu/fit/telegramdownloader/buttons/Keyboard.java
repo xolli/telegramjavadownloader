@@ -32,9 +32,9 @@ public abstract class Keyboard {
 
 
     void setButtonsInRow(KeyboardRow row, String[] nameButton){ //заполняем ряды
-        for(int buttonNumber = 0;buttonNumber<nameButton.length;buttonNumber++){
+        for (String s : nameButton) {
             KeyboardButton button = new KeyboardButton();
-            button.setText(nameButton[buttonNumber]);
+            button.setText(s);
             row.add(button);
         }
     }
@@ -50,4 +50,7 @@ public abstract class Keyboard {
     public ReplyKeyboardMarkup getKeyboard(){
         return keyboardMarkup;
     }
+
+    public abstract void addStopButton();
+    public abstract void removeStopButton();
 }

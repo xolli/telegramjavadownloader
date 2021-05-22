@@ -4,6 +4,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.nsu.fit.telegramdownloader.Controller;
+import ru.nsu.fit.telegramdownloader.buttons.Keyboard;
 
 import java.net.MalformedURLException;
 
@@ -12,6 +13,7 @@ public abstract class Condition {
     protected Controller controller;
     protected SendMessage message;
     protected Update update;
+    protected Keyboard keyboard;
 
 
     public Condition(Long chatID, Controller controller){

@@ -12,7 +12,6 @@ import ru.nsu.fit.telegramdownloader.utils.TokenGenerator;
 import java.net.MalformedURLException;
 
 public class AdminMenu extends UserMenu {
-    private KeyboardAdminMenu keyboard;
     public AdminMenu(Long chatID, Controller controller) throws TelegramApiException {
         super(chatID, controller);
         keyboard = new KeyboardAdminMenu();
@@ -23,7 +22,7 @@ public class AdminMenu extends UserMenu {
 
     public void recv(Update update) throws TelegramApiException, MalformedURLException {
         super.recv(update);
-        message.setReplyMarkup(keyboard.getKeyboard());
+
         checkAdminButtons();
     }
 
