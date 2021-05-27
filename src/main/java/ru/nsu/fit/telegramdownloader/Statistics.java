@@ -6,11 +6,16 @@ import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.util.HashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class Statistics implements AutoCloseable {
     static Logger LOGGER;
+
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
     static {
         try(FileInputStream ins = new FileInputStream("log.config")){
             LogManager.getLogManager().readConfiguration(ins);
@@ -27,14 +32,20 @@ public class Statistics implements AutoCloseable {
     }
 
     public Long getUserStat(Long userId) {
-        synchronized (data) {
+        lock.readLock().lock();
+        try {
             return data.getOrDefault(userId, 0L);
+        } finally {
+            lock.readLock().unlock();
         }
     }
 
     public void updateUserStat(Long userId, Long downloadData) {
-        synchronized (data) {
+        lock.writeLock().lock();
+        try {
             data.put(userId, data.getOrDefault(userId, 0L) + downloadData);
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
