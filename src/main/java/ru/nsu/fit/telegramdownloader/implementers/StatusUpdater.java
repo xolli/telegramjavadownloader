@@ -1,10 +1,12 @@
 package ru.nsu.fit.telegramdownloader.implementers;
 
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.nsu.fit.telegramdownloader.DownloaderBot;
+import ru.nsu.fit.telegramdownloader.buttons.Keyboard;
 import ru.nsu.fit.telegramdownloader.utils.FilesUtils;
 
 import java.io.*;
@@ -16,11 +18,19 @@ public class StatusUpdater {
     private final Integer statusMessageId;
     private final DownloaderBot bot;
     private final String chatId;
+//    private final Keyboard keyboard;
 
     public StatusUpdater(String statusText, DownloaderBot bot, String chatId) throws TelegramApiException {
-        statusMessageId = bot.sendMessage(statusText, chatId).getMessageId();
+//        this.keyboard = keyboard;
+        SendMessage message = new SendMessage();
+//        keyboard.addStopButton();
+//        message.setReplyMarkup(keyboard.getKeyboard());
+//        bot.sendMessage(message,"Downloading...", chatId); //к сожалению нельзя редактировать сообщение в котором есть установленная клавиатура, поэтому еще одно
+        statusMessageId = bot.sendMessage(statusText,chatId).getMessageId();
         this.bot = bot;
         this.chatId = chatId;
+
+
     }
 
     protected void updateStatus(String text) throws TelegramApiException {
@@ -35,6 +45,7 @@ public class StatusUpdater {
     }
 
     protected void uploadFile(String filename) throws TelegramApiException, IOException {
+//        keyboard.removeStopButton();
         if (FilesUtils.getFileSize(filename) < FILE_LIMIT) {
             _uploadFile(filename);
         } else {
@@ -88,6 +99,7 @@ public class StatusUpdater {
     protected void _uploadFile(String filename) throws TelegramApiException {
         SendDocument sendFile = new SendDocument(chatId, new InputFile(new File(filename)));
         sendFile.setReplyToMessageId(getStatusMessageId());
+//        sendFile.setReplyMarkup(keyboard.getKeyboard());
         bot.execute(sendFile);
     }
 }

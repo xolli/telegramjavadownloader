@@ -18,7 +18,6 @@ public class UserMenu extends Condition {
     private KeyboardUserMenu keyboard;
     private final HashSet<TorrentDownloader> downloadTorrents;
     private final HashSet<UrlDownloader> downloadUrl;
-
     public UserMenu(Long chatID, Controller controller) throws TelegramApiException {
         super(chatID, controller);
         keyboard = new KeyboardUserMenu();
@@ -29,11 +28,11 @@ public class UserMenu extends Condition {
         downloadUrl = new HashSet<>();
     }
 
-
+    @Override
     public void recv(Update update) throws TelegramApiException, MalformedURLException {
         this.update = update;
-        message.setReplyMarkup(keyboard.getKeyboard());
         checkContent();
+        message.setReplyMarkup(keyboard.getKeyboard());
     }
 
     protected void checkContent() throws TelegramApiException, MalformedURLException {
@@ -45,14 +44,13 @@ public class UserMenu extends Condition {
 
     private void checkTorrentDocument() throws TelegramApiException {
         if (update.getMessage().hasDocument()){
-            System.out.println("noooooo");
             String torrentFileName = update.getMessage().getDocument().getFileName();
             if (!FilenameUtils.getExtension(torrentFileName).equals("torrent")) {
                 message.setText("This file is not a torrent-file");
                 return;
             }
             TorrentDownloader newTorrent = new TorrentDownloader(update.getMessage().getDocument(), torrentFileName,
-                    controller.getBot(), chatID.toString(), controller.getStat(), chatID);
+                    controller.getBot(), chatID.toString(), controller.getStat(), chatID, keyboard);
             downloadTorrents.add(newTorrent);
             Thread torrentThread = new Thread(newTorrent);
             torrentThread.start();
@@ -60,9 +58,10 @@ public class UserMenu extends Condition {
     }
 
     private void checkMagnetLink() throws TelegramApiException {
-        if (update.getMessage().hasText() && TorrentDownloader.validateMagnetLink(update.getMessage().getText())) {
+        if (update.getMessage().hasText() &&
+                TorrentDownloader.validateMagnetLink(update.getMessage().getText())) {
             TorrentDownloader newTorrent = new TorrentDownloader(update.getMessage().getText(), controller.getBot(),
-                    chatID.toString(), controller.getStat(), chatID);
+                    chatID.toString(), controller.getStat(), chatID, keyboard);
             downloadTorrents.add(newTorrent);
             Thread torrentThread = new Thread(newTorrent);
             torrentThread.start();
@@ -72,18 +71,17 @@ public class UserMenu extends Condition {
     private void checkURL() throws MalformedURLException, TelegramApiException {
         if(update.getMessage().hasText() && UrlHandler.isUrl(update.getMessage().getText())){
             UrlDownloader newUrl = new UrlDownloader(chatID.toString(),
-                    update.getMessage().getText(), controller.getBot(), controller.getStat(), update.getMessage().getFrom().getId());
+                    update.getMessage().getText(), controller.getBot(), controller.getStat(), update.getMessage().getFrom().getId(), keyboard);
             downloadUrl.add(newUrl);
             Thread downloadThread = new Thread(newUrl);
             downloadThread.start();
         }
-
     }
 
     private void checkButtons() throws TelegramApiException {
         if(update.getMessage().hasText()){
             String pressedButton = update.getMessage().getText();
-            if(pressedButton.equals(KeyboardUserMenu.STATS) || "/stat".equals(pressedButton)){
+            if (pressedButton.equals(KeyboardUserMenu.STATS) || "/stat".equals(pressedButton)){
                 GetStat.sendMyStat(controller.getBot(),controller.getStat(),update.getMessage().getFrom().getId(),message);
             } else if(pressedButton.equals(KeyboardUserMenu.HELP)){
                 Helper.sendHelp(controller.getBot(),message);
@@ -99,6 +97,4 @@ public class UserMenu extends Condition {
             }
         }
     }
-
-
 }

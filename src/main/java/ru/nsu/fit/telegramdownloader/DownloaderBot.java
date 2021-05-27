@@ -42,79 +42,14 @@ public class DownloaderBot extends TelegramLongPollingBot {
             }
         }
     }
-        /*
-    //контроллеру это отправлять
-    private void acceptMessage(Message message) throws TelegramApiException, MalformedURLException {
-        if (message.hasText()) {
-            acceptTextMessage(message);
-        } else if (message.hasDocument()) {
-            acceptDocumentMessage(message);
-        }
-    }
-    //контроллер
-    private boolean checkAuth(Message message) {
-        return authorisationUtils.trustedUser(message.getFrom().getId());
-    }
-    //контроллер
-    private void acceptDocumentMessage(Message message) throws TelegramApiException {
-        if (!checkAuth(message)) {
-            sendMessage("You are not trusted user", message.getChatId().toString());
-            return;
-        }
-        if (!FilenameUtils.getExtension(message.getDocument().getFileName()).equals("torrent")) {
-            sendMessage("This file is not a torrent-file", message.getChatId().toString());
-            return;
-        }
-        File torrentFile = downloadTorrentFile(message.getDocument());
-        Thread torrentThread = new Thread(new TorrentDownloader(torrentFile, message.getDocument().getFileName(),
-                this, message.getChatId().toString(), stat, message.getFrom().getId()));
-        torrentThread.start();
-    }
-
-    //перенести в состояние скачивателя
-    private File downloadTorrentFile(Document torrentDoc) {
-        GetFile getFileMethod = new GetFile();
-        getFileMethod.setFileId(torrentDoc.getFileId());
-        try {
-            org.telegram.telegrambots.meta.api.objects.File file = execute(getFileMethod);
-            return downloadFile(file.getFilePath());
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-
-    /контроллер
-    private void acceptTextMessage(Message message) throws TelegramApiException, MalformedURLException {
-        System.out.println(message.getFrom().getId());
-        if (UrlHandler.isUrl(message.getText()) && authorisationUtils.trustedUser(message.getFrom().getId())) {
-            Thread downloadThread = new Thread(new UrlDownloader(message.getChatId().toString(),
-                    message.getText(), this, stat, message.getFrom().getId()));
-            downloadThread.start();
-        } else if (!authorisationUtils.trustedUser(message.getFrom().getId()) &&
-                authorisationUtils.isToken(message.getText())) {
-            authorisationUtils.addToken(message.getText(), message.getFrom().getId());
-            sendMessage("Token accepted", message.getChatId().toString());
-        } else if (!authorisationUtils.trustedUser(message.getFrom().getId())) {
-            sendMessage("You are not trusted user", message.getChatId().toString());
-        } else if ("/stat".equals(message.getText())) {
-            GetStat.sendMyStat(this, stat, message.getFrom().getId(), message.getChatId().toString());
-        } else if (authorisationUtils.isAdmin(message.getFrom().getId()) && "/allstat".equals(message.getText())) {
-            GetStat.sendAllStat(this, stat, message.getFrom().getId(), message.getChatId().toString());
-        } else if (authorisationUtils.isAdmin(message.getFrom().getId()) &&
-                message.getText().split(" ", 2)[0].equals("/generatetoken") &&
-                StringUtils.isNumeric(message.getText().split(" ", 2)[1])) {
-            String token = TokenGenerator.generateToken();
-            sendMessage("Generated token: " + token, message.getChatId().toString());
-            authorisationUtils.addToken(token, Long.parseLong(message.getText().split(" ", 2)[1], 10));
-        } else {
-            sendMessage("is not url", message.getChatId().toString());
-        }
-    }*/
 
     public Message sendMessage(String text, String chatId) throws TelegramApiException {
         SendMessage message = new SendMessage(chatId, text);
+        return execute(message);
+    }
+    public Message sendMessage(SendMessage message,String text, String chatId) throws TelegramApiException {
+        message.setText(text);
+        message.setChatId(chatId);
         return execute(message);
     }
 

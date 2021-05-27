@@ -8,11 +8,26 @@ import ru.nsu.fit.telegramdownloader.condition.Condition;
 import ru.nsu.fit.telegramdownloader.condition.Start;
 import ru.nsu.fit.telegramdownloader.utils.AuthorisationUtils;
 
+import java.io.FileInputStream;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public final class Controller {
+
+    static Logger LOGGER;
+    static {
+        try(FileInputStream ins = new FileInputStream("log.config")){
+            LogManager.getLogManager().readConfiguration(ins);
+            LOGGER = Logger.getLogger(DownloaderBot.class.getName());
+        }catch (Exception ignore){
+            ignore.printStackTrace();
+        }
+    }
+
     private final AuthorisationUtils authorisationUtils;
     private final Statistics stat;
     private final Map<Long, Condition> users;
@@ -27,6 +42,7 @@ public final class Controller {
 
     public void recvMess(Update update) throws TelegramApiException, MalformedURLException {
         setChatId(update);
+        LOGGER.log(Level.INFO,"mess from "+chatId);
         if(!users.containsKey(chatId)){ //нового пользователя кидаем в старт
             users.put(chatId, new Start(chatId,this));
         }

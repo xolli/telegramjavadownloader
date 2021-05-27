@@ -16,21 +16,21 @@ public class AdminMenu extends UserMenu {
     private KeyboardAdminMenu keyboard;
     private final AuthorisationUtils authorisationUtils;
 
-
     public AdminMenu(Long chatID, Controller controller) throws TelegramApiException {
         super(chatID, controller);
+        authorisationUtils = AuthorisationUtils.getInstance();
         keyboard = new KeyboardAdminMenu();
         message.setText("Hi, Admin!");
         message.setReplyMarkup(keyboard.getKeyboard());
         send();
-        authorisationUtils = AuthorisationUtils.getInstance();
     }
 
+    @Override
     public void recv(Update update) throws TelegramApiException, MalformedURLException {
         this.update = update;
         checkContent();
-        message.setReplyMarkup(keyboard.getKeyboard());
         checkAdminButtons();
+        message.setReplyMarkup(keyboard.getKeyboard());
     }
 
     private void checkAdminButtons() throws TelegramApiException {
@@ -40,8 +40,10 @@ public class AdminMenu extends UserMenu {
                 GetStat.sendAllStat(controller.getBot(),controller.getStat(),chatID,message);
             } else if(pressedButton.equals(KeyboardAdminMenu.GENERATE_TOKEN) || "/generatetoken".equals(pressedButton)){
                 String token = TokenGenerator.generateToken();
-                message.setText("Generated token: " + token);
-                authorisationUtils.addToken(token, 0L);
+                authorisationUtils.generateToken(token);
+                message.setText("Generated token:");
+                send();
+                message.setText(token); // для удобного копирования
                 send();
             }
         }

@@ -17,7 +17,7 @@ public class GetStat {
     public static void sendAllStat(DownloaderBot bot, Statistics stat, Long userId, SendMessage message) throws TelegramApiException {
         HashMap<Long, Long> statMap = stat.getStat();
         StringBuilder text = new StringBuilder();
-        text.append("Stat:\n");
+        text.append("Stat\n");
         for (Long user : statMap.keySet()) {
             text.append(user).append(": ").append(FilesUtils.humanReadableByteCountBin(statMap.get(user))).append("\n");
         }

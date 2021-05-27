@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.zeroturnaround.zip.ZipUtil;
 import ru.nsu.fit.telegramdownloader.DownloaderBot;
 import ru.nsu.fit.telegramdownloader.Statistics;
+import ru.nsu.fit.telegramdownloader.buttons.Keyboard;
 import ru.nsu.fit.telegramdownloader.utils.FilesUtils;
 
 import java.io.*;
@@ -43,7 +44,7 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
     private final Long userId;
 
     public TorrentDownloader(Document torrentDoc, String inputName, DownloaderBot bot, String chatId,
-                             Statistics stat, Long userId) throws TelegramApiException {
+                             Statistics stat, Long userId, Keyboard keyboard) throws TelegramApiException {
         super("Init torrent..", bot, chatId);
         this.bot = bot;
         this.inputName = inputName;
@@ -55,6 +56,7 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
             FilesUtils.mkDir("downloadTelegramBot/" + getDirName(inputName));
             client = new Client(InetAddress.getLocalHost(),
                     SharedTorrent.fromFile(torrentFile, new File("downloadTelegramBot/" + getDirName(inputName))));
+
             LOGGER.info("Client created");
             client.setMaxDownloadRate(0.0);
             client.setMaxUploadRate(0.0);
@@ -63,7 +65,7 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
         }
     }
 
-    public TorrentDownloader (String magnetLink, DownloaderBot bot, String chatId, Statistics stat, Long userId) throws TelegramApiException {
+    public TorrentDownloader (String magnetLink, DownloaderBot bot, String chatId, Statistics stat, Long userId, Keyboard keyboard) throws TelegramApiException {
         super("Init magnet link..", bot, chatId);
         this.bot = bot;
         this.stat = stat;
@@ -177,6 +179,6 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
 
     public static boolean validateMagnetLink(String text) {
         String beginLink = "magnet:?xt=urn:";
-        return beginLink.equals(text.substring(0, beginLink.length()));
+        return text.length() > 14 && beginLink.equals(text.substring(0, beginLink.length()));
     }
 }
