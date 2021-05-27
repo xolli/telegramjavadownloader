@@ -7,22 +7,18 @@ import ru.nsu.fit.telegramdownloader.utils.AuthorisationUtils;
 
 public class Authorisation extends Condition {  //вся авторизация делается здесь, после прохода юзер/admin идет в след состояние
     private final AuthorisationUtils authorisationUtils;
+
     public Authorisation(Long chatID, Controller controller){
         super(chatID, controller);
         authorisationUtils = AuthorisationUtils.getInstance();
     }
 
-
-
-
     public void authorisation() throws TelegramApiException {
         if (authorisationUtils.isAdmin(chatID)){
-            controller.setCondition(chatID,this,new AdminMenu(chatID,controller));
+            controller.setCondition(chatID,this, new AdminMenu(chatID,controller));
             return;
-        }
-
-        if(authorisationUtils.trustedUser(chatID)){
-            controller.setCondition(chatID,this,new UserMenu(chatID,controller));
+        } else if(authorisationUtils.isTrustedUser(chatID)){
+            controller.setCondition(chatID,this, new UserMenu(chatID,controller));
             return;
         }
 
@@ -31,7 +27,7 @@ public class Authorisation extends Condition {  //вся авторизация 
     }
 
     public void recv(Update update) throws TelegramApiException {
-        if(update.getMessage().hasText() && authorisationUtils.isToken(update.getMessage().getText())){
+        if(update.getMessage().hasText() && authorisationUtils.isToken(update.getMessage().getText())) {
             authorisationUtils.addToken(update.getMessage().getText(), update.getMessage().getFrom().getId());
             message.setText("Token accepted");
             send();

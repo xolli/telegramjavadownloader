@@ -1,10 +1,7 @@
 package ru.nsu.fit.telegramdownloader;
 
-import org.apache.commons.io.FilenameUtils;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -15,13 +12,6 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-
-import ru.nsu.fit.telegramdownloader.implementers.GetStat;
-import ru.nsu.fit.telegramdownloader.implementers.TorrentDownloader;
-import ru.nsu.fit.telegramdownloader.implementers.UrlDownloader;
-import ru.nsu.fit.telegramdownloader.utils.TokenGenerator;
-import ru.nsu.fit.telegramdownloader.utils.UrlHandler;
-import org.apache.commons.lang3.StringUtils;
 
 public class DownloaderBot extends TelegramLongPollingBot {
     static Logger LOGGER;
@@ -37,7 +27,6 @@ public class DownloaderBot extends TelegramLongPollingBot {
     private final Controller controller;
 
     public DownloaderBot() {
-
         controller = new Controller();
         controller.setBot(this);
         LOGGER.log(Level.INFO, "Init bot");
@@ -47,7 +36,6 @@ public class DownloaderBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
             try {
-
                 controller.recvMess(update);
             } catch (TelegramApiException | MalformedURLException e) {
                 e.printStackTrace();
@@ -129,15 +117,6 @@ public class DownloaderBot extends TelegramLongPollingBot {
         SendMessage message = new SendMessage(chatId, text);
         return execute(message);
     }
-
-
-
-
-
-
-
-
-
 
     @Override
     public String getBotUsername() {

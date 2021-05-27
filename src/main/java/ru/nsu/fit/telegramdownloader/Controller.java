@@ -15,10 +15,9 @@ import java.util.Map;
 public final class Controller {
     private final AuthorisationUtils authorisationUtils;
     private final Statistics stat;
-    private Map<Long, Condition> users;
+    private final Map<Long, Condition> users;
     private Long chatId;
     private DownloaderBot telegramBot;
-
 
     public Controller(){
         authorisationUtils = AuthorisationUtils.getInstance();
@@ -28,9 +27,8 @@ public final class Controller {
 
     public void recvMess(Update update) throws TelegramApiException, MalformedURLException {
         setChatId(update);
-        System.out.println(chatId);
         if(!users.containsKey(chatId)){ //нового пользователя кидаем в старт
-            users.put(chatId,new Start(chatId,this));
+            users.put(chatId, new Start(chatId,this));
         }
         users.get(chatId).recv(update);  //идем в состояние и кидаем туда месс
 
@@ -43,6 +41,7 @@ public final class Controller {
     public void setBot(DownloaderBot telegramBot){
         this.telegramBot = telegramBot;
     }
+
     public DownloaderBot getBot(){
         return telegramBot;
     }

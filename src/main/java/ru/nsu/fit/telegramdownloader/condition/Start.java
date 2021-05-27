@@ -12,10 +12,10 @@ public class Start extends Condition {
 
     @Override
     public void recv(Update update) throws TelegramApiException {
-        message.setText("Hi! This is a bot that can download files and upload them to the telegram");
+        message.setText("Hi! This is a bot that can download files and upload them to the Telegram");
         send();
-        Authorisation authorisation = new Authorisation(chatID,controller);
-        controller.setCondition(chatID,this,authorisation);
+        Authorisation authorisation = new Authorisation(chatID, controller);
+        controller.setCondition(chatID,this, authorisation);
         authorisation.authorisation();
     }
 }

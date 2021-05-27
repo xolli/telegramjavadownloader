@@ -3,6 +3,7 @@ package ru.nsu.fit.telegramdownloader.implementers;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.nsu.fit.telegramdownloader.DownloaderBot;
 import ru.nsu.fit.telegramdownloader.Statistics;
+import ru.nsu.fit.telegramdownloader.exceptions.StopDownloadingException;
 import ru.nsu.fit.telegramdownloader.utils.FilesUtils;
 import ru.nsu.fit.telegramdownloader.utils.UrlHandler;
 
@@ -13,6 +14,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UrlDownloader extends StatusUpdater implements Runnable {
     private final String DOWNLOAD_FOLDER = "downloadTelegramBot";
@@ -20,6 +22,8 @@ public class UrlDownloader extends StatusUpdater implements Runnable {
     private final long fileSize;
     private final Statistics stat;
     private final Long userId;
+    private final AtomicBoolean downloading;
+    private BufferedInputStream inputDownloading;
 
     public UrlDownloader(String chatId, String url, DownloaderBot bot, Statistics stat, Long userId) throws TelegramApiException, MalformedURLException {
         super("Wait...", bot, chatId);
@@ -28,6 +32,7 @@ public class UrlDownloader extends StatusUpdater implements Runnable {
         fileSize = getFileSize(new URL(url));
         this.stat = stat;
         this.userId = userId;
+        downloading = new AtomicBoolean(false);
     }
 
     @Override
@@ -35,6 +40,7 @@ public class UrlDownloader extends StatusUpdater implements Runnable {
         String filename = null;
         try {
             filename = DownloadFile();
+            downloading.set(true);
             uploadFile(filename);
             stat.updateUserStat(userId, FilesUtils.getFileSize(filename));
         } catch (IOException e) {
@@ -43,7 +49,7 @@ public class UrlDownloader extends StatusUpdater implements Runnable {
             } catch (TelegramApiException telegramApiException) {
                 telegramApiException.printStackTrace();
             }
-        } catch (TelegramApiException e) {
+        } catch (TelegramApiException | StopDownloadingException e) {
             e.printStackTrace();
         } finally {
             if (filename != null && !filename.endsWith("/")) {
@@ -56,27 +62,32 @@ public class UrlDownloader extends StatusUpdater implements Runnable {
         }
     }
 
-    private String DownloadFile() throws IOException, TelegramApiException {
+    private String DownloadFile() throws IOException, TelegramApiException, StopDownloadingException {
         String filename = UrlHandler.getFileName(url);
-        try (BufferedInputStream in = new BufferedInputStream(new URL(url).openStream());
-             FileOutputStream fileOutputStream = new FileOutputStream(DOWNLOAD_FOLDER + '/' + filename)) {
+        inputDownloading =  new BufferedInputStream(new URL(url).openStream());
+        try (FileOutputStream fileOutputStream = new FileOutputStream(DOWNLOAD_FOLDER + '/' + filename)) {
             byte[] dataBuffer = new byte[1024];
             int bytesRead;
             long countBytesRead = 0;
             long oldProgressBytes = 0;
             long oldPercent = 0;
-            while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
+            while ((bytesRead = inputDownloading.read(dataBuffer, 0, 1024)) != -1) {
                 fileOutputStream.write(dataBuffer, 0, bytesRead);
                 countBytesRead += bytesRead;
                 String newSize = FilesUtils.humanReadableByteCountBin(countBytesRead);
                 if (fileSize != -1 && oldPercent > (countBytesRead / fileSize * 100)) {
-                    updateStatus( (countBytesRead / fileSize * 100) + "% downloaded from file \"" + filename + "\"");
+                    updateStatus((countBytesRead / fileSize * 100) + "% downloaded from file \"" + filename + "\"");
                     oldPercent = (countBytesRead / fileSize * 100);
                 } else if (countBytesRead - oldProgressBytes > 1024 * 1024 * 3) {
-                    updateStatus( newSize + " downloaded from file \"" + filename + "\"");
+                    updateStatus(newSize + " downloaded from file \"" + filename + "\"");
                     oldProgressBytes = countBytesRead;
                 }
             }
+        } catch (IOException ex) {
+            Files.delete(Paths.get(DOWNLOAD_FOLDER + '/' + UrlHandler.getFileName(url)));
+            throw new StopDownloadingException();
+        } finally {
+            inputDownloading.close();
         }
         updateStatus("File " + UrlHandler.getFileName(url) + " downloaded! Start upload file");
         return DOWNLOAD_FOLDER + '/' + UrlHandler.getFileName(url);
@@ -98,6 +109,17 @@ public class UrlDownloader extends StatusUpdater implements Runnable {
             if(conn instanceof HttpURLConnection) {
                 ((HttpURLConnection)conn).disconnect();
             }
+        }
+    }
+
+    public void stop() throws TelegramApiException {
+        if (!downloading.get() && inputDownloading != null) {
+            try {
+                inputDownloading.close();
+            } catch (IOException exception) {
+                exception.printStackTrace();
+            }
+            updateStatus("Stop downloading");
         }
     }
 }

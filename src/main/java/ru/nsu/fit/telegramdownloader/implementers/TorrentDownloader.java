@@ -3,7 +3,11 @@ package ru.nsu.fit.telegramdownloader.implementers;
 
 import com.turn.ttorrent.client.Client;
 import com.turn.ttorrent.client.SharedTorrent;
+import com.turn.ttorrent.common.Torrent;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.io.FileUtils;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -17,8 +21,10 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public class TorrentDownloader extends StatusUpdater implements Runnable {
     static Logger LOGGER;
@@ -32,7 +38,7 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
     }
     private Client client;
     private final DownloaderBot bot;
-    private final String inputName;
+    private String inputName;
     private final Statistics stat;
     private final Long userId;
 
@@ -55,7 +61,26 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
         } catch (IOException | NoSuchAlgorithmException exception) {
             exception.printStackTrace();
         }
+    }
 
+    public TorrentDownloader (String magnetLink, DownloaderBot bot, String chatId, Statistics stat, Long userId) throws TelegramApiException {
+        super("Init magnet link..", bot, chatId);
+        this.bot = bot;
+        this.stat = stat;
+        this.userId = userId;
+        try {
+            File torrentFile = magnet2Torrent(magnetLink);
+            this.inputName = torrentFile.getName().replace(".torrent", "");
+            LOGGER.info("Start create client");
+            FilesUtils.mkDir("downloadTelegramBot/" + getDirName(inputName));
+            client = new Client(InetAddress.getLocalHost(),
+                    SharedTorrent.fromFile(torrentFile, new File("downloadTelegramBot/" + getDirName(inputName))));
+            LOGGER.info("Client created");
+            client.setMaxDownloadRate(0.0);
+            client.setMaxUploadRate(0.0);
+        } catch (IOException | NoSuchAlgorithmException exception) {
+            exception.printStackTrace();
+        }
     }
 
     @Override
@@ -63,7 +88,26 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
         try {
             updateStatus("Start download torrent");
             client.download();
+            long beginTime = System.currentTimeMillis() / 1000L;
+            AtomicReference<Float> old_progress = new AtomicReference<>((float) 0);
+            client.addObserver((observable, data) -> {
+                Client client = (Client) observable;
+                float progress = client.getTorrent().getCompletion();
+                long nowTime = System.currentTimeMillis() / 1000L;
+                if (nowTime - beginTime > 1 && old_progress.get() != progress) {
+                    old_progress.set(progress);
+                    try {
+                        updateStatus("Progress downloading: " + progress + "%");
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
             client.waitForCompletion();
+            if (client.getState() == Client.ClientState.ERROR) {
+                FileUtils.deleteDirectory(new File("downloadTelegramBot/" + getDirName(inputName)));
+                return;
+            }
             updateStatus("Start upload file...");
             String zipName = zipDir("downloadTelegramBot/" + getDirName(inputName));
             uploadFile(zipName);
@@ -76,7 +120,7 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
         }
     }
 
-    private String zipDir(String dirName) throws IOException {
+    private String zipDir(String dirName) {
         ZipUtil.pack(new File(dirName), new File(deleteSlash(dirName) + ".zip"));
         return deleteSlash(dirName) + ".zip";
     }
@@ -110,4 +154,29 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
         return null;
     }
 
+    public void stopDownload() {
+        if (client.getState() != Client.ClientState.DONE) {
+            client.stop();
+            try {
+                updateStatus("Downloading stopped");
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public File magnet2Torrent(String magnetLink) throws IOException {
+        File tempFile = File.createTempFile("tgtrrnt", ".torrent");
+        String line = "python3 Magnet_To_Torrent2.py -m \"" + magnetLink + "\" -o " + tempFile.getPath();
+        System.out.println("python3 Magnet_To_Torrent2.py -m \"" + magnetLink + "\" -o " + tempFile.getPath());
+        CommandLine cmdLine = CommandLine.parse(line);
+        DefaultExecutor executor = new DefaultExecutor();
+        executor.execute(cmdLine);
+        return tempFile;
+    }
+
+    public static boolean validateMagnetLink(String text) {
+        String beginLink = "magnet:?xt=urn:";
+        return beginLink.equals(text.substring(0, beginLink.length()));
+    }
 }

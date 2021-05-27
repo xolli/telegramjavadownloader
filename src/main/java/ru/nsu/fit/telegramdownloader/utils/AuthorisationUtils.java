@@ -21,7 +21,7 @@ public class AuthorisationUtils {
         return admins.contains(userId);
     }
 
-    public boolean trustedUser(Long userId) {
+    public boolean isTrustedUser(Long userId) {
         return tokens.containsValue(userId);
     }
 

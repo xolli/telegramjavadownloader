@@ -29,12 +29,7 @@ public abstract class Condition {
         controller.sendMess(message);
     }
 
-
     public abstract void recv(Update update) throws TelegramApiException, MalformedURLException;
-
-
-
-
 
    /* public void checkDefault(Update update) throws TelegramApiException {
         if(update.getMessage().getText().equals("/start") && !(this instanceof Start)){
