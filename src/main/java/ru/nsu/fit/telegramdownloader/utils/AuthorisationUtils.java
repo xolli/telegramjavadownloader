@@ -68,6 +68,6 @@ public class AuthorisationUtils {
         return tokens.containsKey(text);
     }
     public boolean unusedToken(String text){
-        return tokens.get(text).equals((long) 0);
+        return this.isToken(text) && tokens.get(text).equals((long) 0);
     }
 }

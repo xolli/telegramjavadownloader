@@ -13,9 +13,5 @@ public class KeyboardAdminMenu extends KeyboardUserMenu {
         setKeyBoard();
     }
 
-    public KeyboardAdminMenu(int cntOfRows){
-        super(cntOfRows);
-        setButtonsInRow(rowList.get(ROW_WITH_ALL_STATS), ALL_STATS);
-        setButtonsInRow(rowList.get(ROW_WITH_GENERATE_TOKEN), GENERATE_TOKEN);
-    }
+
 }

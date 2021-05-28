@@ -22,8 +22,8 @@ public abstract class Condition {
         message = new SendMessage();
     }
 
-    public Long getChatID() {
-        return chatID;
+    public SendMessage getMessege() {
+        return message;
     }
 
     public void send() throws TelegramApiException {
