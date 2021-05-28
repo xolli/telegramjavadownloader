@@ -19,4 +19,10 @@ public class TestUtils {
         Assert.assertEquals("name", UrlHandler.getFileName("http://login:password@example.com/path/path/path/path/name"));
         Assert.assertEquals("name", UrlHandler.getFileName("http://example.com/path/name?key=val"));
     }
+
+    @Test
+    public void testIsUrl() {
+        Assert.assertTrue(UrlHandler.isUrl("https://example.com/name"));
+        Assert.assertFalse(UrlHandler.isUrl("is not url"));
+    }
 }
