@@ -34,6 +34,7 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
             ignore.printStackTrace();
         }
     }
+    private static final String DOWNLOAD_DIR =  "downloadTelegramBot/";
     private Client client;
     private final DownloaderBot bot;
     private String inputName;
@@ -41,7 +42,7 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
     private final Long userId;
 
     public TorrentDownloader(Document torrentDoc, String inputName, DownloaderBot bot, String chatId,
-                             Statistics stat, Long userId, Keyboard keyboard) throws TelegramApiException {
+                             Statistics stat, Long userId) throws TelegramApiException {
         super("Init torrent..", bot, chatId);
         this.bot = bot;
         this.inputName = inputName;
@@ -50,9 +51,9 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
         try {
             File torrentFile = downloadTorrentFile(torrentDoc);
             LOGGER.info("Start create client");
-            FilesUtils.mkDir("downloadTelegramBot/" + getDirName(inputName));
+            FilesUtils.mkDir(DOWNLOAD_DIR + getDirName(inputName));
             client = new Client(InetAddress.getLocalHost(),
-                    SharedTorrent.fromFile(torrentFile, new File("downloadTelegramBot/" + getDirName(inputName))));
+                    SharedTorrent.fromFile(torrentFile, new File(DOWNLOAD_DIR + getDirName(inputName))));
 
             LOGGER.info("Client created");
             client.setMaxDownloadRate(0.0);
@@ -71,9 +72,9 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
             File torrentFile = magnet2Torrent(magnetLink);
             this.inputName = torrentFile.getName().replace(".torrent", "");
             LOGGER.info("Start create client");
-            FilesUtils.mkDir("downloadTelegramBot/" + getDirName(inputName));
+            FilesUtils.mkDir(DOWNLOAD_DIR + getDirName(inputName));
             client = new Client(InetAddress.getLocalHost(),
-                    SharedTorrent.fromFile(torrentFile, new File("downloadTelegramBot/" + getDirName(inputName))));
+                    SharedTorrent.fromFile(torrentFile, new File(DOWNLOAD_DIR + getDirName(inputName))));
             LOGGER.info("Client created");
             client.setMaxDownloadRate(0.0);
             client.setMaxUploadRate(0.0);
@@ -104,15 +105,15 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
             });
             client.waitForCompletion();
             if (client.getState() == Client.ClientState.ERROR) {
-                FileUtils.deleteDirectory(new File("downloadTelegramBot/" + getDirName(inputName)));
+                FileUtils.deleteDirectory(new File(DOWNLOAD_DIR + getDirName(inputName)));
                 return;
             }
             updateStatus("Start upload file...");
-            String zipName = zipDir("downloadTelegramBot/" + getDirName(inputName));
+            String zipName = zipDir(DOWNLOAD_DIR + getDirName(inputName));
             uploadFile(zipName);
             stat.updateUserStat(userId, FilesUtils.getFileSize(zipName));
             Files.delete(Paths.get(zipName));
-            FileUtils.deleteDirectory(new File("downloadTelegramBot/" + getDirName(inputName)));
+            FileUtils.deleteDirectory(new File(DOWNLOAD_DIR + getDirName(inputName)));
             updateStatus("Done!");
         } catch (TelegramApiException | IOException e) {
             e.printStackTrace();

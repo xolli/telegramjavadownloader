@@ -28,26 +28,22 @@ public final class Controller {
         }
     }
 
-    private final AuthorisationUtils authorisationUtils;
     private final Statistics stat;
     private final Map<Long, Condition> users;
     private Long chatId;
     private DownloaderBot telegramBot;
 
     public Controller(){
-        authorisationUtils = AuthorisationUtils.getInstance();
         users = new HashMap<>();
         stat = new Statistics();
     }
 
     public void recvMess(Update update) throws TelegramApiException, MalformedURLException {
         setChatId(update);
-        LOGGER.log(Level.INFO,"mess from "+chatId);
-        if(!users.containsKey(chatId)){ //нового пользователя кидаем в старт
+        if(!users.containsKey(chatId)){
             users.put(chatId, new Start(chatId,this));
         }
-        users.get(chatId).recv(update);  //идем в состояние и кидаем туда месс
-        System.out.println(update.getMessage().getChatId() + " " + update.getMessage().getFrom().getId() + " " + update.getMessage().getMessageId());
+        users.get(chatId).recv(update);
     }
 
     public void sendMess(BotApiMethod<Message> messageNew) throws TelegramApiException {

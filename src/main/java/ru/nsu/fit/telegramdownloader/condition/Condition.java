@@ -13,17 +13,12 @@ public abstract class Condition {
     protected Controller controller;
     protected SendMessage message;
     protected Update update;
-    protected Keyboard keyboard;
 
 
     public Condition(Long chatID, Controller controller){
         this.chatID = chatID;
         this.controller = controller;
         message = new SendMessage();
-    }
-
-    public Long getChatID() {
-        return chatID;
     }
 
     public void send() throws TelegramApiException {

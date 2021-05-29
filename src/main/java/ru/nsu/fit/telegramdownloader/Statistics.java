@@ -6,16 +6,15 @@ import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class Statistics implements AutoCloseable {
-    static Logger LOGGER;
-
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-
+    static Logger LOGGER;
     static {
         try(FileInputStream ins = new FileInputStream("log.config")){
             LogManager.getLogManager().readConfiguration(ins);
@@ -28,7 +27,6 @@ public class Statistics implements AutoCloseable {
 
     public Statistics() {
         data = FilesUtils.readMapFileLL("stat.txt");
-        LOGGER.info("stat: " + data);
     }
 
     public Long getUserStat(Long userId) {
@@ -54,11 +52,14 @@ public class Statistics implements AutoCloseable {
     public void close() throws Exception {
         FileWriter fStream = new FileWriter("stat.txt", false);
         BufferedWriter info = new BufferedWriter(fStream);
-        for (Long userId : data.keySet()) {
-            info.write(userId + ":" + data.get(userId) + "\n");
+        try {
+            for (Map.Entry<Long, Long> user : data.entrySet()) {
+                info.write(user.getKey() + ":" + user.getValue() + "\n");
+            }
+        } finally {
+            info.close();
+            fStream.close();
         }
-        info.close();
-        fStream.close();
     }
 
     public HashMap<Long, Long> getStat() {

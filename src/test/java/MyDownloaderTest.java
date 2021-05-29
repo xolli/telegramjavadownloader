@@ -49,7 +49,7 @@ public class MyDownloaderTest {
         testDoneThread.start();
         DownloaderBot bot = TestScript.intiBot();
         TorrentDownloader downloader = new TorrentDownloader(new Document("BQACAgQAAxkBAAIDsWCxeZhgSY8qhEHrnFRsY__3OSTrAALBCwACtt-JUTdW__hOzd0UHwQ", "AgADwQsAArbfiVE", null, "sudoku.torrent", "application/x-bittorrent", 518),
-                "testname", bot, "1483105750", new Statistics(), 1483105750L, new KeyboardUserMenu());
+                "testname", bot, "1483105750", new Statistics(), 1483105750L);
         Thread downloaderMagnetlink = new Thread(downloader);
         downloaderMagnetlink.start();
         downloaderMagnetlink.join();

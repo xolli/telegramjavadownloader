@@ -50,7 +50,7 @@ public class UserMenu extends Condition {
                 return;
             }
             TorrentDownloader newTorrent = new TorrentDownloader(update.getMessage().getDocument(), torrentFileName,
-                    controller.getBot(), chatID.toString(), controller.getStat(), chatID, keyboard);
+                    controller.getBot(), chatID.toString(), controller.getStat(), chatID);
             downloadTorrents.add(newTorrent);
             Thread torrentThread = new Thread(newTorrent);
             torrentThread.start();

@@ -1,12 +1,11 @@
 package ru.nsu.fit.telegramdownloader.utils;
 
-//import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 public class AuthorisationUtils {
     private final HashSet<Long> admins;
@@ -26,7 +25,7 @@ public class AuthorisationUtils {
     }
 
     private static class AuthorisationUtilsHolder {
-        private final static AuthorisationUtils instance = new AuthorisationUtils();
+        private static final AuthorisationUtils instance = new AuthorisationUtils();
     }
 
     public void generateToken(String token) {
@@ -47,14 +46,11 @@ public class AuthorisationUtils {
     }
 
     private void writeTokens() {
-        try {
-            FileWriter fStream = new FileWriter("tokenlist.txt", false);
-            BufferedWriter info = new BufferedWriter(fStream);
-            for (String token : tokens.keySet()) {
-                info.write(token + ":" + tokens.get(token) + "\n");
+        try (FileWriter fStream = new FileWriter("tokenlist.txt", false);
+             BufferedWriter info = new BufferedWriter(fStream)) {
+            for (Map.Entry<String, Long> token : tokens.entrySet()) {
+                info.write(token.getKey() + ":" + token.getValue() + "\n");
             }
-            info.close();
-            fStream.close();
         } catch (IOException exception) {
             exception.printStackTrace();
         }
