@@ -50,3 +50,9 @@ sonarqube {
         property "sonar.organization", "xolli"
     }
 }
+
+task coverage {
+    dependsOn 'test'
+    dependsOn 'jacocoTestReport'
+    tasks.findByName('jacocoTestReport').mustRunAfter('test')
+}
