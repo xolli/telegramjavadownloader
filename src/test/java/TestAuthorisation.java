@@ -1,3 +1,4 @@
+import org.junit.Assert;
 import org.junit.Test;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -24,6 +25,9 @@ public class TestAuthorisation {
         Authorisation authorisation = new Authorisation(1483105750L, controller);
         authorisation.authorisation();
         simpleTestUserAuthThread.join(10000L);
+        if (simpleTestUserAuthThread.isAlive()) {
+            Assert.fail("The client did not receive a message");
+        }
     }
 
     @Test
@@ -37,6 +41,9 @@ public class TestAuthorisation {
         Start start = new Start(1483105750L, controller);
         start.recv(new Update());
         startChatTestThread.join(10000L);
+        if (startChatTestThread.isAlive()) {
+            Assert.fail("The client did not receive a message");
+        }
     }
 
 }

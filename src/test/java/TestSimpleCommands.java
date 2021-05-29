@@ -1,3 +1,4 @@
+import org.junit.Assert;
 import org.junit.Test;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -14,15 +15,21 @@ public class TestSimpleCommands {
         Thread testScriptThread = new Thread(new TestScript("personalstat"));
         testScriptThread.start();
         testScriptThread.join(10000L);
+        if (testScriptThread.isAlive()) {
+            Assert.fail("The client did not receive a message");
+        }
     }
 
     @Test
     public void testAllStat() throws TelegramApiException, InterruptedException {
-        DownloaderBot bot =TestScript.intiBot();
+        DownloaderBot bot = TestScript.intiBot();
         GetStat.sendAllStat(bot, new Statistics(), 1483105750L, new SendMessage("1483105750", ""));
         Thread testScriptThread = new Thread(new TestScript("allstat"));
         testScriptThread.start();
         testScriptThread.join(10000L);
+        if (testScriptThread.isAlive()) {
+            Assert.fail("The client did not receive a message");
+        }
     }
 
     @Test
@@ -32,5 +39,8 @@ public class TestSimpleCommands {
         Thread testScriptThread = new Thread(new TestScript("helper"));
         testScriptThread.start();
         testScriptThread.join();
+        if (testScriptThread.isAlive()) {
+            Assert.fail("The client did not receive a message");
+        }
     }
 }

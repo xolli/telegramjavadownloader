@@ -1,3 +1,4 @@
+import org.junit.Assert;
 import org.junit.Test;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -21,10 +22,13 @@ public class MyDownloaderTest {
         downloaderUrl.start();
         downloaderUrl.join();
         testDoneThread.join(10000L);
+        if (testDoneThread.isAlive()) {
+            Assert.fail("The client did not receive a message");
+        }
     }
 
     @Test
-    public void magnetlinkTest() throws TelegramApiException, IOException, InterruptedException {
+    public void magnetlinkTest() throws TelegramApiException, InterruptedException {
         Thread testDoneThread = new Thread(new TestScript("done"));
         testDoneThread.start();
         DownloaderBot bot = TestScript.intiBot();
@@ -34,6 +38,9 @@ public class MyDownloaderTest {
         downloaderMagnetlink.start();
         downloaderMagnetlink.join();
         testDoneThread.join(10000L);
+        if (testDoneThread.isAlive()) {
+            Assert.fail("The client did not receive a message");
+        }
     }
 
     @Test
@@ -47,5 +54,8 @@ public class MyDownloaderTest {
         downloaderMagnetlink.start();
         downloaderMagnetlink.join();
         testDoneThread.join(10000L);
+        if (testDoneThread.isAlive()) {
+            Assert.fail("The client did not receive a message");
+        }
     }
 }
