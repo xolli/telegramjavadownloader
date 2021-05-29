@@ -6,8 +6,12 @@ import java.security.SecureRandom;
 public class TokenGenerator {
     protected static SecureRandom random = new SecureRandom();
 
+    private TokenGenerator() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static String generateToken() {
-        long longToken = Math.abs(random.nextLong());
+        long longToken = random.nextLong();
         return Long.toString( longToken, 16 );
     }
 }
