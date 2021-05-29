@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'jacoco'
+    id "org.sonarqube" version "3.2.0"
 }
 
 group 'org.example'
@@ -40,6 +41,13 @@ jacocoTestReport {
         xml.enabled false
         csv.enabled false
         html.destination layout.buildDirectory.dir('jacocoHtml').get().asFile
+    }
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "xolli_telegramdownloader"
+        property "sonar.organization", "xolli"
     }
 }
 

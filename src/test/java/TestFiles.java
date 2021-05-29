@@ -6,7 +6,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class MyTestFiles {
+public class TestFiles {
     @Test
     public void testMkDir() {
         String testDirName = "testDirectory";
@@ -79,18 +79,18 @@ public class MyTestFiles {
 
     @Test
     public void testHumanReadableByteCountBin() {
-        Assert.assertEquals(FilesUtils.humanReadableByteCountBin(0), "0 B");
-        Assert.assertEquals(FilesUtils.humanReadableByteCountBin(1024), "1.0 KiB");
-        Assert.assertEquals(FilesUtils.humanReadableByteCountBin(1024 * 1024), "1.0 MiB");
-        Assert.assertEquals(FilesUtils.humanReadableByteCountBin(1024 * 1024 * 1024), "1.0 GiB");
-        Assert.assertEquals(FilesUtils.humanReadableByteCountBin(1024 * 1024 * 1024 * 1024L), "1.0 TiB");
+        Assert.assertEquals("0 B", FilesUtils.humanReadableByteCountBin(0));
+        Assert.assertEquals("1.0 KiB", FilesUtils.humanReadableByteCountBin(1024));
+        Assert.assertEquals("1.0 MiB", FilesUtils.humanReadableByteCountBin(1024 * 1024));
+        Assert.assertEquals("1.0 GiB", FilesUtils.humanReadableByteCountBin(1024 * 1024 * 1024));
+        Assert.assertEquals("1.0 TiB", FilesUtils.humanReadableByteCountBin(1024 * 1024 * 1024 * 1024L));
     }
 
     @Test
     public void testFileSize() throws IOException {
         String testFilename = "testFileSize_12mifo5.txt";
         writeTextToFile (testFilename, "000");
-        Assert.assertEquals(FilesUtils.getFileSize(testFilename), 3);
+        Assert.assertEquals(3, FilesUtils.getFileSize(testFilename));
         File file = new File(testFilename);
         file.delete();
     }
@@ -110,7 +110,7 @@ public class MyTestFiles {
     }
 
     @Test
-    public void testReadNumberSetFileErrorExist() throws FileNotFoundException, UnsupportedEncodingException {
+    public void testReadNumberSetFileErrorExist() {
         String testFilename = "testReadNumberSetFile_123432.txt";
         File file = new File(testFilename);
         file.delete();
