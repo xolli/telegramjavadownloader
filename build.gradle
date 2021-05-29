@@ -50,5 +50,3 @@ sonarqube {
         property "sonar.organization", "xolli"
     }
 }
-
-

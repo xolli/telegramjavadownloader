@@ -11,7 +11,7 @@ public class TokenGenerator {
     }
 
     public static String generateToken() {
-        long longToken = random.nextLong();
+        long longToken = Math.abs(random.nextLong() / 2);
         return Long.toString( longToken, 16 );
     }
 }

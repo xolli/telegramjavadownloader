@@ -5,6 +5,6 @@ import ru.nsu.fit.telegramdownloader.utils.TokenGenerator;
 public class MyTestTokenGenerator {
     @Test
     public void testGenerateTokens() {
-        Assert.assertEquals(TokenGenerator.generateToken().length(), 16);
+        Assert.assertNotEquals(TokenGenerator.generateToken(), TokenGenerator.generateToken());
     }
 }
