@@ -38,7 +38,7 @@ jacoco {
 
 jacocoTestReport {
     reports {
-        xml.enabled false
+        xml.enabled true
         csv.enabled false
         html.destination layout.buildDirectory.dir('jacocoHtml').get().asFile
     }
@@ -48,6 +48,7 @@ sonarqube {
     properties {
         property "sonar.projectKey", "xolli_telegramdownloader"
         property "sonar.organization", "xolli"
+        property "sonar.coverage.jacoco.xmlReportPaths", '${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml'
     }
 }
 
