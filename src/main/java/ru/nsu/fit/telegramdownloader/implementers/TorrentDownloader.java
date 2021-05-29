@@ -3,11 +3,9 @@ package ru.nsu.fit.telegramdownloader.implementers;
 
 import com.turn.ttorrent.client.Client;
 import com.turn.ttorrent.client.SharedTorrent;
-import com.turn.ttorrent.common.Torrent;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.io.FileUtils;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -25,7 +23,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 public class TorrentDownloader extends StatusUpdater implements Runnable {
     static Logger LOGGER;
