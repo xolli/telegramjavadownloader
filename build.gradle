@@ -1,7 +1,33 @@
 plugins {
-    id 'java'
     id 'jacoco'
     id "org.sonarqube" version "3.2.0"
+    id 'java'
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+}
+
+jacoco {
+    toolVersion = "0.8.6"
+}
+
+task coverage {
+    dependsOn 'test'
+    dependsOn 'jacocoTestReport'
+    tasks.findByName('jacocoTestReport').mustRunAfter('test')
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        csv.enabled false
+        html.destination layout.buildDirectory.dir('jacocoHtml').get().asFile
+    }
+}
+
+test {
+    finalizedBy jacocoTestReport // report is always generated after tests run
 }
 
 group 'org.example'
@@ -25,25 +51,6 @@ dependencies {
     implementation 'org.telegram:telegramapi:66.2'
 }
 
-test {
-    finalizedBy jacocoTestReport // report is always generated after tests run
-}
-jacocoTestReport {
-    dependsOn test // tests are required to run before generating the report
-}
-
-jacoco {
-    toolVersion = "0.8.6"
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        csv.enabled false
-        html.destination layout.buildDirectory.dir('jacocoHtml').get().asFile
-    }
-}
-
 sonarqube {
     properties {
         property "sonar.projectKey", "xolli_telegramdownloader"
@@ -53,8 +60,3 @@ sonarqube {
     }
 }
 
-task coverage {
-    dependsOn 'test'
-    dependsOn 'jacocoTestReport'
-    tasks.findByName('jacocoTestReport').mustRunAfter('test')
-}
