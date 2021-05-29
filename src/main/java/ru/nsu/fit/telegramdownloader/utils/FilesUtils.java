@@ -10,9 +10,9 @@ import java.util.HashSet;
 import java.util.Objects;
 
 public class FilesUtils {
-    static public void mkDir(String name) {
+    static public boolean mkDir(String name) {
         File f = new File(name);
-        f.mkdir();
+        return f.mkdir();
     }
 
     static public long getFileSize(String filename) throws IOException {

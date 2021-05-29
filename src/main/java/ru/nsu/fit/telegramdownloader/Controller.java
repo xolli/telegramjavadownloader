@@ -47,7 +47,7 @@ public final class Controller {
             users.put(chatId, new Start(chatId,this));
         }
         users.get(chatId).recv(update);  //идем в состояние и кидаем туда месс
-
+        System.out.println(update.getMessage().getChatId() + " " + update.getMessage().getFrom().getId() + " " + update.getMessage().getMessageId());
     }
 
     public void sendMess(BotApiMethod<Message> messageNew) throws TelegramApiException {

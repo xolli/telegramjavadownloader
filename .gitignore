@@ -9,6 +9,9 @@ gradle
 *log.*.txt
 # Compiled class file
 *.class
+*session
+*sessiondata.txt
+downloadTelegramBot/*
 
 # Log file
 *.log

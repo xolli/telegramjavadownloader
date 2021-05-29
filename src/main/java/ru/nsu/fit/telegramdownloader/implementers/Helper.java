@@ -9,7 +9,7 @@ import ru.nsu.fit.telegramdownloader.condition.Authorisation;
 
 public class Helper {
     public static void sendHelp(DownloaderBot bot, SendMessage message) throws TelegramApiException {
-        message.setText("Zdes' mozhno skachivat' some files iz torrent, and drugie explanations\ntype /stat to view the statistics");
+        message.setText("Бот для прокачивания ссылок и торрентов через телеграм");
         bot.execute(message);
     }
 }

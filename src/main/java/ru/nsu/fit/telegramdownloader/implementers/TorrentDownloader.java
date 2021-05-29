@@ -170,7 +170,6 @@ public class TorrentDownloader extends StatusUpdater implements Runnable {
     public File magnet2Torrent(String magnetLink) throws IOException {
         File tempFile = File.createTempFile("tgtrrnt", ".torrent");
         String line = "python3 Magnet_To_Torrent2.py -m \"" + magnetLink + "\" -o " + tempFile.getPath();
-        System.out.println("python3 Magnet_To_Torrent2.py -m \"" + magnetLink + "\" -o " + tempFile.getPath());
         CommandLine cmdLine = CommandLine.parse(line);
         DefaultExecutor executor = new DefaultExecutor();
         executor.execute(cmdLine);
