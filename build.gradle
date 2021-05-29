@@ -49,6 +49,7 @@ sonarqube {
         property "sonar.projectKey", "xolli_telegramdownloader"
         property "sonar.organization", "xolli"
         property "sonar.coverage.jacoco.xmlReportPaths", '${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml'
+        property "sonar.host.url", "https://sonarcloud.io"
     }
 }
 
