@@ -4,31 +4,39 @@ plugins {
     id 'java'
 }
 
-jacocoTestReport {
-    dependsOn test // tests are required to run before generating the report
-}
-
 jacoco {
     toolVersion = "0.8.6"
+    reportsDir = file("$buildDir/jacocoReports")
 }
 
+tasks.withType(Test) {
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    // The JaCoCo plugin adds a JacocoTaskExtension extension to all tasks of type Test.
+    // Use task state to include or not task execution data
+    // https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/TaskState.html
+    // This declaration will be used as a closure, notice there no wrapping parenthesis
+    executionData tasks.withType(Test).findAll { it.state.executed }
+
+    // If the above instruction really don't work, there maybe some things that intervene in the process, in this case, you may be a bit more lucky with this instruction
+    // executionData { tasks.withType(Test).findAll { it.jacoco.destinationFile.exists() }*.jacoco.destinationFile }
+
+    reports {
+        xml.enabled true
+        xml.destination(file("${jacoco.reportsDir}/all-tests/jacocoAllTestReport.xml"))
+        html.enabled true
+        html.destination(file("${jacoco.reportsDir}/all-tests/html"))
+    }
+}
+/*
 task coverage {
     dependsOn 'test'
     dependsOn 'jacocoTestReport'
     tasks.findByName('jacocoTestReport').mustRunAfter('test')
-}
+}*/
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        csv.enabled false
-        html.destination layout.buildDirectory.dir('jacocoHtml').get().asFile
-    }
-}
-
-test {
-    finalizedBy jacocoTestReport // report is always generated after tests run
-}
 
 group 'org.example'
 version '1.0-SNAPSHOT'
@@ -52,11 +60,27 @@ dependencies {
 }
 
 sonarqube {
+    group = "verification"
     properties {
         property "sonar.projectKey", "xolli_telegramdownloader"
         property "sonar.organization", "xolli"
-        property "sonar.coverage.jacoco.xmlReportPaths", '${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml'
+//        property "sonar.coverage.jacoco.xmlReportPaths", '${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml'
+        property "sonar.coverage.jacoco.xmlReportPaths", "${jacoco.reportsDir}/all-tests/jacocoAllTestReport.xml"
         property "sonar.host.url", "https://sonarcloud.io"
     }
 }
 
+
+
+/*
+sonarqube {
+    group = "verification"
+    properties {
+        // https://jira.sonarsource.com/browse/MMF-1651
+        property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/test-results/integrationTest"
+        property "sonar.coverage.jacoco.xmlReportPaths", "${jacoco.reportsDir}/all-tests/jacocoAllTestReport.xml"
+        property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.projectKey", "xolli_telegramdownloader"
+        property "sonar.organization", "xolli"
+    }
+}*/
