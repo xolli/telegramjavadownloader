@@ -52,16 +52,16 @@ public class TestAuthorisation {
         if (!authorisationUtils.isTrustedUser(1803832607L) || !authorisationUtils.isAdmin(1803832607L)) {
             return;
         }
-        TestScriptSimpleUser testScriptSimpleUser = new TestScriptSimpleUser("adminuserauth");
-        Thread simpleTestUserAuthThread = new Thread(testScriptSimpleUser);
-        simpleTestUserAuthThread.start();
+        TestScriptAdminUser testScriptSimpleUser = new TestScriptAdminUser("adminuserauth");
+        Thread adminTestUserAuthThread = new Thread(testScriptSimpleUser);
+        adminTestUserAuthThread.start();
         DownloaderBot bot = TestScriptSimpleUser.intiBot();
         Controller controller = new Controller();
         controller.setBot(bot);
-        Authorisation authorisation = new Authorisation(1483105750L, controller);
+        Authorisation authorisation = new Authorisation(1803832607L, controller);
         authorisation.authorisation();
-        simpleTestUserAuthThread.join(10000L);
-        if (simpleTestUserAuthThread.isAlive()) {
+        adminTestUserAuthThread.join(10000L);
+        if (adminTestUserAuthThread.isAlive()) {
             Assert.fail("The client did not receive a message");
         }
     }
