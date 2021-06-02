@@ -7,16 +7,16 @@ import ru.nsu.fit.telegramdownloader.DownloaderBot;
 
 import java.io.IOException;
 
-public class TestScript implements Runnable {
+public class TestScriptSimpleUser implements Runnable {
     private final String mode;
 
-    public TestScript(String mode) {
+    public TestScriptSimpleUser(String mode) {
         this.mode = mode;
     }
 
     @Override
     public void run() {
-        String line = "python3 testfiles/checktest.py " + mode;
+        String line = "python3 testfiles/checktest.py " + mode + " simpleuser.txt";
         CommandLine cmdLine = CommandLine.parse(line);
         DefaultExecutor executor = new DefaultExecutor();
         try {

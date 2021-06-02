@@ -3,7 +3,7 @@ import sys
 from telethon import TelegramClient, events
 from telethon.tl import types
 
-sessiondata = open("sessiondata.txt", "r")
+sessiondata = open(sys.argv[2], "r")
 session = sessiondata.readline().strip()
 api_id = int(sessiondata.readline())
 api_hash = sessiondata.readline().strip()
@@ -24,6 +24,9 @@ async def handler_new_message(update):
 		sys.exit(0)
 	elif test_mode == "startchat" and "Hi! This is a bot that can download files and upload them to the Telegram" == update.message.text:
 		sys.exit(0)
+	elif test_mode == "adminuserauth" and "Hi, Admin!" == update.message.text:
+		sys.exit(0)
+		
 
 
 @events.register(events.MessageEdited)

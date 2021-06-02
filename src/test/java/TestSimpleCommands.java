@@ -10,9 +10,9 @@ import ru.nsu.fit.telegramdownloader.implementers.Helper;
 public class TestSimpleCommands {
     @Test
     public void testPersonalStat() throws TelegramApiException, InterruptedException {
-        DownloaderBot bot =TestScript.intiBot();
+        DownloaderBot bot = TestScriptSimpleUser.intiBot();
         GetStat.sendMyStat(bot, new Statistics(), 1483105750L, new SendMessage("1483105750", ""));
-        Thread testScriptThread = new Thread(new TestScript("personalstat"));
+        Thread testScriptThread = new Thread(new TestScriptSimpleUser("personalstat"));
         testScriptThread.start();
         testScriptThread.join(10000L);
         if (testScriptThread.isAlive()) {
@@ -22,9 +22,9 @@ public class TestSimpleCommands {
 
     @Test
     public void testAllStat() throws TelegramApiException, InterruptedException {
-        DownloaderBot bot = TestScript.intiBot();
+        DownloaderBot bot = TestScriptSimpleUser.intiBot();
         GetStat.sendAllStat(bot, new Statistics(), 1483105750L, new SendMessage("1483105750", ""));
-        Thread testScriptThread = new Thread(new TestScript("allstat"));
+        Thread testScriptThread = new Thread(new TestScriptSimpleUser("allstat"));
         testScriptThread.start();
         testScriptThread.join(10000L);
         if (testScriptThread.isAlive()) {
@@ -34,9 +34,9 @@ public class TestSimpleCommands {
 
     @Test
     public void testHelp() throws TelegramApiException, InterruptedException {
-        DownloaderBot bot =TestScript.intiBot();
+        DownloaderBot bot = TestScriptSimpleUser.intiBot();
         Helper.sendHelp(bot, new SendMessage("1483105750", ""));
-        Thread testScriptThread = new Thread(new TestScript("helper"));
+        Thread testScriptThread = new Thread(new TestScriptSimpleUser("helper"));
         testScriptThread.start();
         testScriptThread.join();
         if (testScriptThread.isAlive()) {
